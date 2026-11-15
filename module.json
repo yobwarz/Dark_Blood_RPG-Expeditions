@@ -34,7 +34,7 @@
       "tipo": "auxiliar"
     }
   },
-  "license": "LICENSE.md",
+  "license": "LICENSE",
   "url": "https://github.com/yobwarz/Dark_Blood_RPG-Expeditions",
   "manifest": "https://raw.githubusercontent.com/yobwarz/Dark_Blood_RPG-Expeditions/main/module.json",
   "download": "https://raw.githubusercontent.com/yobwarz/Dark_Blood_RPG-Expeditions/v0.3.0/dist/sangue-escuro-logistica.zip"
