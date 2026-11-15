@@ -1,5 +1,3 @@
-# Licença do utilitário
-
 Código disponibilizado sob a licença MIT.
 
 Copyright (c) 2026 Yob Warz — Sangue Escuro.
