@@ -1,0 +1,41 @@
+{
+  "id": "sangue-escuro-logistica",
+  "title": "Sangue Escuro: Expedições e Abrigos",
+  "description": "Central auxiliar independente com abrigos, expedições, manutenção/oficina e comunicações/terminais. Áreas configuráveis e exibição opcional nas fichas.",
+  "version": "0.3.0",
+  "authors": [
+    {
+      "name": "Sangue Escuro — Yob Warz"
+    }
+  ],
+  "compatibility": {
+    "minimum": "13",
+    "verified": "13"
+  },
+  "relationships": {
+    "systems": [
+      {
+        "id": "sangue-escuro",
+        "type": "system",
+        "compatibility": {
+          "minimum": "0.7.0"
+        }
+      }
+    ]
+  },
+  "esmodules": [
+    "scripts/main.mjs"
+  ],
+  "styles": [
+    "assets/logistica.css"
+  ],
+  "flags": {
+    "sangue-escuro": {
+      "tipo": "auxiliar"
+    }
+  },
+  "license": "LICENSE.md",
+  "url": "https://github.com/yobwarz/Dark_Blood_RPG-Expeditions",
+  "manifest": "https://raw.githubusercontent.com/yobwarz/Dark_Blood_RPG-Expeditions/main/module.json",
+  "download": "https://raw.githubusercontent.com/yobwarz/Dark_Blood_RPG-Expeditions/v0.3.0/dist/sangue-escuro-logistica.zip"
+}
