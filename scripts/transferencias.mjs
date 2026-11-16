@@ -1,3 +1,4 @@
+import {integration,transferIntegrated,reconcileIntegrated} from './saques.mjs';
 import {ID,gm,get,save,serial,achar,podeOperar,owner,validarFisico,quantidade,limparItem,comQuantidade,num,int,uid,now,log} from './core.mjs';
 function pendente(s){if(s.transacoes.some(t=>t.estado==='pendente')||s.oficina.some(o=>o.tentativa?.estado==='pendente'))throw Error('Há uma transferência pendente de conferência. O Mestre deve reconciliá-la antes de movimentar outros itens.');}
 function validar(a,user){if(!podeOperar(a,user))throw Error('Sem permissão para movimentar este abrigo.');if(a.estado!=='seguro')throw Error('O abrigo não está seguro/acessível para movimentação.');}
@@ -6,10 +7,12 @@ export async function transferir(req,user,requestId){gm();return serial(async()=
  if(req.direcao==='depositar'){source=actor.items.get(req.item);if(!source)throw Error('Item não encontrado no personagem.');data=source.toObject();validarFisico(data);if(data.system.vestida||data.system.equipada||data.flags?.['sangue-escuro-dead-space']?.instalado)throw Error('Remova ou desequipe o equipamento antes de depositar.');if(q>quantidade(data))throw Error('Quantidade maior que o estoque do personagem.');}
  else if(req.direcao==='retirar'){entry=d.itens.find(i=>i.id===req.item);if(!entry)throw Error('Item não encontrado no depósito.');data=entry.dados;validarFisico(data);if(q>quantidade(data))throw Error('Quantidade maior que o estoque do depósito.');}
  else throw Error('Direção inválida.');
- const tx={id:uid(),solicitacao:requestId,estado:'pendente',tempo:now(),usuario:user.id,abrigo:a.id,deposito:d.id,ator:actor.uuid,direcao:req.direcao,item:req.item,quantidade:q,dados:limparItem(data),espaco:num(req.direcao==='retirar'?entry.espaco:req.espaco??1),sourceId:source?.id??null};
+ const api=integration(data);
+ const tx={...(api?{integracaoSaques:1,phase:'intent'}:{}),id:uid(),solicitacao:requestId,estado:'pendente',tempo:now(),usuario:user.id,abrigo:a.id,deposito:d.id,ator:actor.uuid,direcao:req.direcao,item:req.item,quantidade:q,dados:limparItem(data),espaco:num(req.direcao==='retirar'?entry.espaco:req.espaco??1),sourceId:source?.id??null};
  // Persistent intent before touching an Actor: recoverable after disconnect/restart.
  s.transacoes.push(tx);await save(s);
  try{
+  if(api)return await transferIntegrated(tx.id,actor,api);
   if(req.direcao==='depositar'){
    if(quantidade(source.toObject())!==quantidade(data))throw Error('O inventário mudou durante a preparação; confira a transferência pendente.');
    if(data.type==='equipamento')await source.update({'system.quantidade':quantidade(data)-q});
@@ -28,6 +31,7 @@ export async function transferir(req,user,requestId){gm();return serial(async()=
  }
  });}
 export async function reconciliar(id,decisao){gm();return serial(async()=>{const s=get(),t=s.transacoes.find(t=>t.id===id&&t.estado==='pendente');if(!t)throw Error('Transação pendente não encontrada.');const {d}=achar(s,t.abrigo,t.deposito);const actor=await fromUuid(t.ator);if(!actor)throw Error('Personagem indisponível; restaure-o antes de reconciliar.');
+ if(t.integracaoSaques||t.saques)return reconcileIntegrated(id,decisao,actor);
  if(t.direcao==='depositar'){
   const source=actor.items.get(t.sourceId),expected=quantidade(t.dados)-t.quantidade;
   const debitado=t.dados.type==='equipamento'?!!source&&quantidade(source.toObject())===expected:!source;
